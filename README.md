@@ -14,3 +14,4 @@ This repository hosts files to replicate
 + **Codes/CO_analysis.R**: run the econometric analysis and simulations conducted for the article
 + **figures.Rmd**: create the figures presented in the article
 + **tables.Rmd**: create the tables presented in the article
++ **Manuscript.Rmd**: the main Rmd file that patches multiple files to produce **Manuscript.docx**
