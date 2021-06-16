@@ -35,7 +35,6 @@ theme_update(
 )
 ```   
 
-
 ```{r blank-pic}
 g_blank <- ggplot() +
   theme_void()
@@ -50,7 +49,7 @@ g_blank <- ggplot() +
 # /*----------------------------------*/
 #' ## State borders
 # /*----------------------------------*/
-CO_state <- st_read(dsn = here("Data/Geographic/US_States"), "states") %>%
+CO_state <- st_read(dsn = here("Data"), "states") %>%
   dplyr::rename(name = STATE_NAME) %>%
   dplyr::filter(!(name %in% c("American Samoa", "Alaska", "Hawaii", "Puerto Rico", "Commonwealth of the Northern Mariana Islands"))) %>%
   dplyr::select(name) %>%
@@ -62,7 +61,7 @@ CO_state <- st_read(dsn = here("Data/Geographic/US_States"), "states") %>%
 #' ## County sf
 # /*----------------------------------*/
 #--- CO counties ---#
-CO_sf <- st_read(dsn = here("Data/Geographic/County"), "Colorado_County_Boundaries") %>%
+CO_sf <- st_read(dsn = here("Data"), "Colorado_County_Boundaries") %>%
   st_transform(4269) %>%
   mutate(state = "Colorado") %>%
   dplyr::select(geometry, state, COUNTY)

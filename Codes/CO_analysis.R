@@ -260,7 +260,7 @@ delta_wu_wy_CO <- fe_ls_CO[["both"]]$coef["gpm", "water_use"] * wy_delta
 # /*=================================================*/
 #' # Analysis with good dwt data
 # /*=================================================*/
-reg_data_CO[, sat_dwt := - dwt]
+reg_data_CO[, sat_dwt := -dwt]
 reg_data_usgs <- reg_data_CO[!is.na(dwt), ]
 
 # /*----------------------------------*/
@@ -312,122 +312,10 @@ elasticity_CO_both_rob <- ((beta_1 + 2 * beta_2 * mean_pc) / mean_y * mean_pc) %
 elasticity_CO_both_se_rob <- ((beta_1_se + 2 * beta_2 * beta_2_se) / mean_y * mean_pc) %>% round(digits = 2)
 
 # /*=================================================*/
-#' # Analysis: specification nonlinear PC
-# /*=================================================*/
-
-#--------------------------
-# Linear
-#--------------------------
-fe_ls_CO_lin <- list()
-
-fe_ls_CO_lin[["both"]] <- felm(water_use ~
-pc + gpm + sat_thickness + precip + et | wdid_tier_hp + year_REA | 0 | wdid, data = reg_data_CO)
-
-fe_ls_CO_lin[["only_gpm"]] <- felm(water_use ~
-pc + gpm + precip + et | wdid_tier_hp + year_REA | 0 | wdid, data = reg_data_CO)
-
-fe_ls_CO_lin[["none"]] <- felm(water_use ~
-pc + precip + et | wdid_tier_hp + year_REA | 0 | wdid, data = reg_data_CO)
-
-fe_ls_CO_lin[["only_sat"]] <- felm(water_use ~
-pc + sat_thickness + precip + et | wdid_tier_hp + year_REA | 0 | wdid, data = reg_data_CO)
-
-stargazer(fe_ls_CO_lin, type = "text")
-
-#--------------------------
-# Non-parametric
-#--------------------------
-data_nonpar <- reg_data_CO[, .(water_use, pc, gpm, sat_thickness, precip, et, wdid_tier_hp, year_REA, wdid)] %>%
-  na.omit()
-
-library(mgcv)
-
-#--- pc fully non-parametric ---#
-# reg_np_1 <- gam(water_use ~ s(pc, k = 6) + gpm + sat_thickness+precip+et + factor(wdid_tier_hp)+factor(year_REA), data = data_nonpar)
-# saveRDS(reg_np_1, "./Data/np_reg_pc")
-
-reg_np_1 <- readRDS(here("./Data/np_reg_pc"))
-
-# plot_data <- plot(reg_np_1)
-#
-# saveRDS(plot_data, "./Data/plot_data.rds")
-#
-#--- pc quadratic ---#
-# reg_np_sq <- gam(water_use ~ pc + I(pc^2) + gpm + sat_thickness+precip+et + factor(wdid_tier_hp)+factor(year_REA), data = data_nonpar)
-# saveRDS(reg_np_sq, "./Data/sq_reg_pc")
-
-reg_np_sq <- readRDS(here("./Data/sq_reg_pc"))
-
-#--- test the improvement ---#
-test_improve <- anova(reg_np_1, reg_np_sq, test = "Chisq")
-
-#--------------------------
-# Visualization
-#--------------------------
-plot_data <- readRDS(here("./Data/plot_data.rds"))
-
-data_plot <- data.table(
-  pc = plot_data[[1]]$x,
-  se = plot_data[[1]]$se,
-  yhat = plot_data[[1]]$fit[, 1] + reg_data_CO[, mean(water_use)]
-) %>%
-  .[, yhat_up := yhat + 1.96 * se] %>%
-  .[, yhat_down := yhat - 1.96 * se]
-
-data_sq <- copy(data_plot) %>%
-  .[, yhat := fe_ls_CO[["both"]]$coef["pc", ] * pc + fe_ls_CO[["both"]]$coef["I(pc^2)", ] * pc^2 + 317]
-
-data_lin <- copy(data_plot) %>%
-  .[, yhat := fe_ls_CO_lin[["both"]]$coef["pc", ] * pc + 265]
-
-# g_nonpar <- ggplot(data = data_plot[pc < 6, ]) +
-#   geom_ribbon(aes(ymin = yhat_down, ymax = yhat_up, x = pc), fill = "red", alpha = 0.3) +
-#   geom_line(aes(y = yhat, x = pc)) +
-#   ylab("Irrigation (acre-feet)") +
-#   xlab("Pumping cost ($/acre-inch)")
-
-g_nonpar_comp <- ggplot(data = data_plot[pc < 6, ]) +
-  geom_line(aes(y = yhat, x = pc)) +
-  ylab("Irrigation (acre-feet)") +
-  xlab("Pumping cost ($/acre-inch)") +
-  geom_line(data = data_sq[pc < 6], aes(y = yhat, x = pc), color = "blue") +
-  geom_line(data = data_lin[pc < 6], aes(y = yhat, x = pc), color = "red")
-
-g_pc_hist <- ggplot(data = reg_data_CO) +
-  geom_histogram(aes(x = pc), color = "blue", fill = "white") +
-  xlab("Pumping cost ($/acre-inch)")
-
-# ggsave(g_nonpar_comp, file = here("./Figures/plot_non_par.pdf"), height = 4, width = 6)
-# ggsave(g_pc_hist, file = here("./Figures/hist_pc.pdf"), height = 4, width = 6)
-
-# /*=================================================*/
-#' # Robustness check (irrigation technology)
-# /*=================================================*/
-# /*----------------------------------*/
-#' ## FE estimation (well-price tier)
-# /*----------------------------------*/
-fe_ls_CO_tech <- list()
-
-fe_ls_CO_tech[["only_gpm"]] <- felm(water_use ~
-pc + I(pc^2) + gpm + precip + et + gdd | wdid_tier_hp + year_REA | 0 | wdid, data = reg_data_CO[year <= 2013, ])
-
-fe_ls_CO_tech[["both"]] <- felm(water_use ~
-pc + I(pc^2) + gpm + sat_thickness + precip + et + gdd | wdid_tier_hp + year_REA | 0 | wdid, data = reg_data_CO[year <= 2013, ])
-
-fe_ls_CO_tech[["non"]] <- felm(water_use ~
-pc + I(pc^2) + precip + et + gdd | wdid_tier_hp + year_REA | 0 | wdid, data = reg_data_CO[year <= 2013, ])
-
-fe_ls_CO_tech[["only_sat"]] <- felm(water_use ~
-pc + I(pc^2) + sat_thickness + precip + et + gdd | wdid_tier_hp + year_REA | 0 | wdid, data = reg_data_CO[year <= 2013, ])
-
-stargazer(fe_ls_CO_tech,type='text')
-
-
-# /*=================================================*/
 #' # gpm in use and out (footnote 2)
 # /*=================================================*/
 data <- readRDS(here("./Data/data_CO.rds")) %>%
   .[numPCC < 3, ]
 
 mean_gpm_use <- reg_data_CO[, mean(gpm)] %>% round(digits = 2)
-mean_gpm_out <- data_out[, mean(WellCap)] %>% round(digits = 2)
+mean_gpm_out <- data[, mean(WellCap)] %>% round(digits = 2)
