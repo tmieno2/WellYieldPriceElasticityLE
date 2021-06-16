@@ -43,7 +43,7 @@ g_blank <- ggplot() +
 # ggsave(g_blank, file = "./Figure/blanc.pdf", height = 1)
 ```
 
-```{r well-map-CO, cache = TRUE, fig.cap = "Spatial Distributions of Wells Used in Empirical Analysis", results = "hide"}
+```{r fig.id = "well-map-CO", cache = TRUE, fig.cap = "Spatial Distributions of Wells Used in Empirical Analysis", results = "hide", , fig.cap.style = "Image Caption"}
 #/*=================================================*/
 #' # Well Locations
 #/*=================================================*/
@@ -158,16 +158,17 @@ g_wel_loc <- ggplot() +
   ) +
   theme_void()
 
-ggsave(g_wel_loc, file = here("Figures/well_loc.pdf"), height = 5.583, width = 5.583)
+# ggsave(g_wel_loc, file = here("Figures/well_loc.pdf"), height = 5.583, width = 5.583)
 
 # ggsave(g_wel_loc, file = "./Figures/well_loc.eps", height = 5.583, width = 5.583, device = "eps")
 
-g_blank
+g_wel_loc
 
 ```
 
+`r run_pagebreak()`
 
-```{r etw-pc-gpm, cache = TRUE, fig.cap = "Heterogeneity of Energy Use Efficiency and Pumping Costs (All Years)", results = "hide"}
+```{r fig.id = "etw-pc-gpm", cache = TRUE, fig.cap = "Heterogeneity of Energy Use Efficiency and Pumping Costs (All Years)", results = "hide"}
 #/*=================================================*/
 #' # Energy use efficiency
 #/*=================================================*/
@@ -211,15 +212,17 @@ g_etw_pc_gpm <- g_fig_etw / g_fig_pc / g_fig_gpm +
     tag_suffix = ')'
   )
 
-ggsave(g_etw_pc_gpm, file = here("Figures/etw_pc_gpm.pdf"), height = 5.583, width = 5.583)
+# ggsave(g_etw_pc_gpm, file = here("Figures/etw_pc_gpm.pdf"), height = 5.583, width = 5.583)
 
-g_blank
+g_etw_pc_gpm
+
 ```
 
 Note: This figure presents the distribution of energy use efficiency, pumping costs, and well yield for all the observed years.
 
+`r run_pagebreak()`
 
-```{r af-wy, fig.cap = "The relationship between water use and well yield", results = "hide"}
+```{r fig.id = "af-wy", fig.cap = "The relationship between water use and well yield", results = "hide"}
 #/*=================================================*/
 #' # Impacts of well yield on water use
 #/*=================================================*/
@@ -239,14 +242,14 @@ g_af_wy <- ggplot(data = plot_data_CO[water_use < 1000, ]) +
   xlab("Well Yield (gpm)") +
   ylab("Water Use (acre-feet)")
 
-ggsave(g_af_wy, file = here("Figures/water_well_yield.pdf"), height = 5.583, width = 5.583)
+# ggsave(g_af_wy, file = here("Figures/water_well_yield.pdf"), height = 5.583, width = 5.583)
 
 # ggsave(g_af_wy, file = "./Figures/water_well_yield.eps", height = 5.583, width = 5.583)
 
-g_blank
+g_af_wy
 ```
 
-```{r pc-vs-wy, fig.cap = "The relationship between pumping cost and well yield", results = "hide"}
+```{r fig.id = "pc-vs-wy", fig.cap = "The relationship between pumping cost and well yield", results = "hide"}
 #/*=================================================*/
 #' # Pumping costs vs. well yield
 #/*=================================================*/

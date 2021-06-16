@@ -1,4 +1,7 @@
-```{r summary-stat, cache=TRUE, tab.cap = "Summary Statistics"}
+
+\newline
+
+```{r tab.id = "summary-stat", cache=TRUE, tab.cap = "Summary Statistics"}
 #/*=================================================*/
 #' # Table 1: summary statistics
 #/*=================================================*/
@@ -37,7 +40,10 @@ autofit()
 
 ```
 
-```{r eprice-schedule, tab.cap = "Energy Price: Block Rate Structure"}
+`r run_pagebreak()`
+\newline
+
+```{r tab.id = "eprice-schedule", tab.cap = "Energy Price: Block Rate Structure"}
 #/*=================================================*/
 #' # Energy price schedule
 #/*=================================================*/
@@ -65,7 +71,11 @@ e_sch %>%
   
 ```
 
-```{r FE-results-NE, dependson = "regression_results", tab.cap = "The impacts of pumping costs on groundwater extraction for irrigation"}
+
+`r run_pagebreak()`
+\newline
+
+```{r tab.id = "FE-results-NE", dependson = "regression_results", tab.cap = "The impacts of pumping costs on groundwater extraction for irrigation"}
 
 #/*=================================================*/
 #' # FE results CO
@@ -113,7 +123,10 @@ fix_border_issues()
 
 ```
 
-```{r FE-results-NE-rob, dependson = "regression_results", tab.cap = "Regression results with more accurate saturated thickness using selected samples"}
+`r run_pagebreak()`
+\newline
+
+```{r tab.id = "FE-results-NE-rob", dependson = "regression_results", tab.cap = "Regression results with more accurate saturated thickness using selected samples"}
 
 #/*=================================================*/
 #' # FE results CO: robust
