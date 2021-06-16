@@ -1,0 +1,159 @@
+```{r summary-stat, cache=TRUE, tab.cap = "Summary Statistics"}
+#/*=================================================*/
+#' # Table 1: summary statistics
+#/*=================================================*/
+
+CO_table <- matrix(NA, 7, 4)
+colnames(CO_table) <- c('Statistic', 'Min', 'Mean (St.Dev)', 'Max')
+
+CO_table[,1] <- c(
+      "Pumping (acre-feet)",
+      "Energy Use Efficiency (kwh/acre-inch)",
+      "Pumping Costs ($/acre-inch)",
+      "Well Yield (gpm)",
+      "Growing Season Precipitation (inches)",
+      "Growing Season Evapotranspiration (inches)",
+      "Growing Degree Days"
+    )
+
+vars_ls <- c('water_use','etw', "pc", 'gpm','precip','et',"gdd")
+
+for (i in 1:length(vars_ls)){
+  temp_var <- reg_data_CO[,vars_ls[i],with=FALSE] %>% unlist
+  CO_table[i,2] <- min(temp_var,na.rm=TRUE) %>% round(digits=2)
+  CO_table[i,3] <- paste0(
+    mean(temp_var,na.rm=TRUE) %>% round(digits=2),
+    ' (',
+    sd(temp_var,na.rm=TRUE) %>% round(digits=2),
+    ')'
+  )
+  CO_table[i,4] <- max(temp_var,na.rm=TRUE) %>% round(digits=2)
+}
+
+CO_table %>% 
+data.table() %>% 
+flextable() %>% 
+autofit()
+
+```
+
+```{r eprice-schedule, tab.cap = "Energy Price: Block Rate Structure"}
+#/*=================================================*/
+#' # Energy price schedule
+#/*=================================================*/
+
+e_sch <- fread(here("./Data/REA_price_schedule.csv")) %>%
+  .[REA == "Highline" & year >= 2013, t2 := NA] %>%
+  .[REA == "Highline" & year >= 2013, p3 := NA] %>%
+  .[year <= 2016,] %>%
+  .[, REAnum := NULL] %>%
+  .[, REA := NULL] %>%
+  setnames(names(.), c("Year", "Price 1", "Price 2", "Price 3", "Threshold 1", "Threshold 2")) %>% 
+  .[, Supplier := c(rep("Highline", 6), rep("Y-W", 6))] %>% 
+  relocate(Supplier)
+
+e_sch %>% 
+  flextable() %>% 
+  merge_v(j = "Supplier") %>% 
+  autofit() %>% 
+  hline(i = 6, border = fp_border(color = "black")) %>% 
+  fix_border_issues() %>% 
+  add_footer_row(
+    values = "Note: Price 1, Price 2, and Price 3 refer to the unit electricity price per kwh at the 1st, 2nd, and 3rd tiers, respectively. Threshold 1 and 2 refer to the threshold electricity uses (kwh/HP) over which the users move on to the next tier. For example, for a farmer served by Highline who has a pump of 100 HP, the farmer would be at the second tier after using 40,000 kwh.",
+    colwidth = 7
+  )
+  
+```
+
+```{r FE-results-NE, dependson = "regression_results", tab.cap = "The impacts of pumping costs on groundwater extraction for irrigation"}
+
+#/*=================================================*/
+#' # FE results CO
+#/*=================================================*/
+
+rows <- data.table(
+  c1 = c("Year FEs included?", "Yes", "Yes", "Yes", "Yes"),
+  c2 = c("Well-hp-price tier FEs included?", "Yes", "Yes", "Yes", "Yes"),
+  c3 = c("Price elasticity estimates", eta_CO$both[1], eta_CO$only_sat[1], eta_CO$non[1], eta_CO$only_gpm[1]),
+  c4 = c("", eta_CO$both[2], eta_CO$only_sat[2], eta_CO$non[2], eta_CO$only_gpm[2])
+) %>% t() %>% data.table()
+attr(rows, "position") <- 15:18
+
+gmap <- modelsummary::gof_map %>% 
+  data.table() %>% 
+  .[, omit := TRUE] %>% 
+  .[raw %in% c("nobs", "adj.r.squared"), omit := FALSE]
+
+list(
+  "Model 1" = fe_ls_CO$both, 
+  "Model 2" = fe_ls_CO$only_sat, 
+  "Model 3" = fe_ls_CO$non, 
+  "Model 4" = fe_ls_CO$only_gpm
+) %>% 
+msummary(
+  coef_map = c(
+    "pc" = 'Pumping costs',
+    "I(pc^2)" = 'Pumping costs (squared)',
+    "gpm" = 'Well yield (WY)',
+    "sat_thickness" = 'Saturated Thickness',
+    "precip" = 'Precipitation (P)',
+    "et" = 'Evapotranspiration',
+    "gdd" = "Growing Degree Days"
+    ),
+  fmt = "%.2f",
+  stars = TRUE,
+  add_row = rows,
+  gof_map = gmap,
+  notes = list("(Standard errors are clustered at the well level)"),
+  output = "flextable"
+) %>% 
+autofit() %>% 
+hline(i = 18, border = fp_border(color = "black")) %>% 
+fix_border_issues() 
+
+```
+
+```{r FE-results-NE-rob, dependson = "regression_results", tab.cap = "Regression results with more accurate saturated thickness using selected samples"}
+
+#/*=================================================*/
+#' # FE results CO: robust
+#/*=================================================*/
+
+rows <- data.table(
+  c1 = c("Year FEs included?", "Yes", "Yes", "Yes", "Yes"),
+  c2 = c("Well-hp-price tier FEs included?", "Yes", "Yes", "Yes", "Yes"),
+  c3 = c("Price elasticity estimates", eta_CO_rob$both[1], eta_CO_rob$only_sat[1], eta_CO_rob$non[1], eta_CO_rob$only_gpm[1]),
+  c4 = c("", eta_CO_rob$both[2], eta_CO_rob$only_sat[2], eta_CO_rob$non[2], eta_CO_rob$only_gpm[2])
+) %>% t() %>% data.table()
+attr(rows, "position") <- 15:18
+
+list(
+  "Model 1" = fe_ls_CO_rob$both, 
+  "Model 2" = fe_ls_CO_rob$only_sat, 
+  "Model 3" = fe_ls_CO_rob$non, 
+  "Model 4" = fe_ls_CO_rob$only_gpm
+) %>% 
+msummary(
+  coef_map = c(
+    "pc" = 'Pumping costs',
+    "I(pc^2)" = 'Pumping costs (squared)',
+    "gpm" = 'Well yield (WY)',
+    "sat_dwt" = 'Saturated Thickness',
+    "precip" = 'Precipitation (P)',
+    "et" = 'Evapotranspiration',
+    "gdd" = "Growing Degree Days"
+    ),
+  fmt = "%.2f",
+  stars = TRUE,
+  add_row = rows,
+  gof_map = gmap,
+  notes = list("(Standard errors are clustered at the well level)"),
+  output = "flextable"
+) %>% 
+autofit() %>% 
+hline(i = 18, border = fp_border(color = "black")) %>% 
+fix_border_issues() 
+
+```
+
+
