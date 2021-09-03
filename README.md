@@ -1,6 +1,8 @@
 # README
 
-This repository hosts files to replicate   
+This repository hosts files to replicate:
+
+Mieno, T, Rouhi-Rad, M, Suter, J, and Hrozencik, A. 2021., "The Importance of Well Yield in Groundwater Demand Specifications," _Land Economics_
 
 ## Replication Instruction
 
