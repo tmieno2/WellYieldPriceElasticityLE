@@ -234,7 +234,7 @@ This work is supported by the National Institute of Food and Agriculture, U.S. D
 
 <br />
 
-```{r child = 'tables.Rmd', cache = T}
+```{r child = "tables.Rmd", cache = T}
 ```
 
 `r run_pagebreak()`
@@ -243,7 +243,7 @@ This work is supported by the National Institute of Food and Agriculture, U.S. D
 
 <br />
 
-```{r child = 'figures.Rmd', cache = T}
+```{r child = "figures.Rmd", cache = T}
 ```
 
 `r run_pagebreak()`
